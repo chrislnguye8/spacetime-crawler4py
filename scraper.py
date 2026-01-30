@@ -92,6 +92,13 @@ STOP_WORDS = {
     "yourself", "yourselves", "you've", "z", "zero"
 }
 
+valid_domains = [
+    "ics.uci.edu",
+    "cs.uci.edu",
+    "informatics.uci.edu",
+    "stat.uci.edu",
+]
+
 def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
     """
     Takes a list of tokens and returns a dictionary of each Token and 
@@ -128,6 +135,8 @@ def extract_next_links(url, resp):
 
     links = set()
 
+    print(f"########### Scraping URL: {url} with status code: {resp.status} ###########")
+
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
 
     for spam in soup(["script", "style"]):
@@ -162,6 +171,13 @@ def is_valid(url):
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
+        parsedDomain = parsed.netloc.split(':')[0]
+        for domain in valid_domains:
+            if parsedDomain.endswith(domain):
+                break
+        else:
+            return False
+
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
