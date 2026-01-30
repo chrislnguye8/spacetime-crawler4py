@@ -1,4 +1,5 @@
 import re
+import sys
 from urllib.parse import urlparse, urlunparse
 from bs4 import BeautifulSoup
 
@@ -91,6 +92,24 @@ STOP_WORDS = {
     "yourself", "yourselves", "you've", "z", "zero"
 }
 
+def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
+    """
+    Takes a list of tokens and returns a dictionary of each Token and 
+    its frequency in the token list.
+    
+    :param tokenList: list of Token objects
+    :type tokenList: list[Token]
+    :return: dictionary of (Token: frequency)
+    :rtype: dict[Token, int]
+    """
+    tokenDict = {}
+    for token in tokenList:
+        if token in tokenDict:
+            tokenDict[token] += 1
+        else:
+            tokenDict[token] = 1
+    return tokenDict
+
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
@@ -111,13 +130,28 @@ def extract_next_links(url, resp):
 
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
 
+    for spam in soup(["script", "style"]):
+        spam.decompose()
+
+    content = soup.get_text()
+    words = re.findall(r'\b[a-zA-Z]{2,}\b', content.lower())
+    filtered_words = [word for word in words if word not in STOP_WORDS]
+    word_frequencies = computeWordFrequencies(filtered_words)
+
+
     for a_tag in soup.find_all('a', href=True):
         parsed = urlparse(a_tag.get('href'))
         parsed = parsed._replace(fragment="")
         unfragmented = urlunparse(parsed)
         links.add(unfragmented)
     
-    
+    with open("crawled_pages.txt", "a", encoding="utf-8") as f:
+        f.write(f"{url}\n")
+        f.write(f"Word frequencies:\n")
+        for word, freq in sorted(word_frequencies.items(), key=lambda x: x[1], reverse=True):
+            f.write(f"{word}: {freq}\n")
+        f.write("\n\n")
+
     return list(links)
 
 def is_valid(url):
