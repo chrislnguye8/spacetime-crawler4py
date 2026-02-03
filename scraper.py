@@ -201,9 +201,11 @@ def is_valid(url):
         else:
             return False
 
+        BAD_QUERIES = {'eventDate', 'tribe-bar-date', 'ical'}
+
         parsedQuery = parsed.query
         params = parse_qs(parsedQuery)
-        if 'eventDate' in params:
+        if any(param in params for param in BAD_QUERIES):
             return False
 
         return not re.match(
