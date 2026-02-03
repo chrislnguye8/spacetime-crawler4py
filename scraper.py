@@ -136,6 +136,9 @@ def extract_next_links(url, resp):
     links = set()
 
     print(f"########### Scraping URL: {url} with status code: {resp.status} ###########")
+    ## Handles cases where there is no response from the webpage
+    if resp is None:
+        return []
 
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
 
@@ -148,12 +151,15 @@ def extract_next_links(url, resp):
     word_frequencies = computeWordFrequencies(filtered_words)
 
 
-    for a_tag in soup.find_all('a', href=True):
-        parsed = urlparse(a_tag.get('href'))
-        parsed = parsed._replace(fragment="")
-        unfragmented = urlunparse(parsed)
-        links.add(unfragmented)
-    
+    if(resp.status == 200):
+        for a_tag in soup.find_all('a', href=True):
+            parsed = urlparse(a_tag.get('href'))
+            parsed = parsed._replace(fragment="")
+            unfragmented = urlunparse(parsed)
+            links.add(unfragmented)
+    else:
+        print("Error: ", resp.error)
+
     with open("crawled_pages.txt", "a", encoding="utf-8") as f:
         f.write(f"{url}\n")
         f.write(f"Word frequencies:\n")
