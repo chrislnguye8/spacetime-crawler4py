@@ -136,24 +136,47 @@ def extract_next_links(url, resp):
     links = set()
 
     print(f"########### Scraping URL: {url} with status code: {resp.status} ###########")
+    ## Handles cases where there is no response
+    if resp is None:
+        return []
+
+    ## Handles cases where there is a response but there is or was no content
+    if resp.raw_response is None:
+        return []
+
+    # Stores content of the webpage
+    content = resp.raw_response.content
+
+    # Handles cases of empty or tiny pages
+    if not content or len(content) < 100:
+        return []
 
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
 
     for spam in soup(["script", "style"]):
         spam.decompose()
 
-    content = soup.get_text()
-    words = re.findall(r'\b[a-zA-Z]{2,}\b', content.lower())
+    text = soup.get_text()
+    words = re.findall(r'\b[a-zA-Z]{2,}\b', text.lower())
     filtered_words = [word for word in words if word not in STOP_WORDS]
     word_frequencies = computeWordFrequencies(filtered_words)
 
 
-    for a_tag in soup.find_all('a', href=True):
-        parsed = urlparse(a_tag.get('href'))
-        parsed = parsed._replace(fragment="")
-        unfragmented = urlunparse(parsed)
-        links.add(unfragmented)
-    
+    if(resp.status == 200):
+        for a_tag in soup.find_all('a', href=True):
+            try:
+                parsed = urlparse(a_tag.get('href'))
+                parsed = parsed._replace(fragment="")
+                unfragmented = urlunparse(parsed)
+                links.add(unfragmented)
+            except ValueError:
+                ## Catches URL that are weirdly formatted or malformed, such as 'YOUR_IP'
+                ## which crawler stumbled on
+                print(f"Skipping malformed URL: {parsed}")
+                continue
+    else:
+        print("Error: ", resp.error)
+
     with open("crawled_pages.txt", "a", encoding="utf-8") as f:
         f.write(f"{url}\n")
         f.write(f"Word frequencies:\n")
@@ -176,6 +199,11 @@ def is_valid(url):
             if parsedDomain.endswith(domain):
                 break
         else:
+            return False
+
+        parsedQuery = parsed.query
+        params = parse_qs(parsedQuery)
+        if 'eventDate' in params:
             return False
 
         return not re.match(
