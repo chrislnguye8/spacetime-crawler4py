@@ -183,6 +183,9 @@ def extract_next_links(url, resp):
         for word, freq in sorted(word_frequencies.items(), key=lambda x: x[1], reverse=True):
             f.write(f"{word}: {freq}\n")
         f.write("\n\n")
+    
+    with open("crawled_urls.txt", "a", encoding="utf-8") as f:
+        f.write(f"{url}\n")
 
     return list(links)
 
