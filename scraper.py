@@ -210,6 +210,13 @@ def is_valid(url):
         params = parse_qs(parsedQuery)
         if any(param in params for param in BAD_QUERIES):
             return False
+        
+        DATE_IN_PATH = re.compile(r"/\d{4}-\d{2}-\d{2}(?:/|$)")
+        parsedPath = parsed.path.lower()
+        if '/calendar/' in parsedPath or '/events/' in parsedPath:
+            return False
+        elif DATE_IN_PATH.search(parsedPath):
+            return False
 
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
