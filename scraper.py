@@ -1,7 +1,11 @@
 import re
 import sys
-from urllib.parse import urlparse, urlunparse, parse_qs
+from urllib.parse import urlparse, urlunparse, parse_qs, urljoin
+from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
+from configparser import ConfigParser
+from utils.config import Config
+from utils import download
 
 STOP_WORDS = {
     "a", "able", "about", "above", "abst", "accordance", "according",
@@ -99,6 +103,15 @@ valid_domains = [
     "stat.uci.edu",
 ]
 
+# dictionary of robots.txt urls to robotparser objects
+ROBOTS_DIC = {}
+
+# parse config file and make global variable
+cParser = ConfigParser("config.ini")
+cParser.read("config.ini")
+config = Config(cParser)
+
+
 def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
     """
     Takes a list of tokens and returns a dictionary of each Token and 
@@ -117,6 +130,27 @@ def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
             tokenDict[token] = 1
     return tokenDict
 
+def make_robot_parser(url, logger=None):
+    parsed = urlparse(url)
+    robots_url = urljoin(f"{parsed.scheme}://{parsed.netloc}", "/robots.txt")
+
+    if robots_url in ROBOTS_DIC:
+        return ROBOTS_DIC[robots_url]
+    
+    response = download(robots_url, config, logger)
+    robotP = RobotFileParser()
+    # this line for debugging
+    robotP.set_url(robots_url)
+
+    try:
+        content = response.raw_response.get("content", b"").decode("utf-8", errors="ignore")
+        robotP.parse(content.splitlines())
+        # should I put into the dic here or after the try/except
+        ROBOTS_DIC[robots_url] = robotP
+    except:
+        robotP = None
+    
+    return robotP
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
@@ -203,6 +237,11 @@ def is_valid(url):
                 break
         else:
             return False
+        
+        robotP = make_robot_parser(url, None)
+        if robotP is not None:
+            if not robotP.can_fetch(config.user_agent, url):
+                return False
 
         BAD_QUERIES = {'eventDate', 'tribe-bar-date', 'ical'}
 
