@@ -5,7 +5,7 @@ from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 from configparser import ConfigParser
 from utils.config import Config
-from utils import download
+from utils.download import download
 
 STOP_WORDS = {
     "a", "able", "about", "above", "abst", "accordance", "according",
@@ -103,13 +103,22 @@ valid_domains = [
     "stat.uci.edu",
 ]
 
+#Global variables for creating the report
+UNIQUE_URLS = set()
+WORD_FREQUENCIES = {} # dictionary of (word: frequency) for all pages crawled
+LONGEST_PAGE = ("", 0) # tuple of (url, word count)
+SUBDOMAIN_COUNTS = {} # dictionary of (subdomain: page count)
+
 # dictionary of robots.txt urls to robotparser objects
 ROBOTS_DIC = {}
 
 # parse config file and make global variable
-cParser = ConfigParser("config.ini")
+'''
+cParser = ConfigParser()
 cParser.read("config.ini")
 config = Config(cParser)
+config.cache_server = get_cache_server(config, restart)
+'''
 
 
 def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
@@ -129,7 +138,7 @@ def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
         else:
             tokenDict[token] = 1
     return tokenDict
-
+'''
 def make_robot_parser(url, logger=None):
     parsed = urlparse(url)
     robots_url = urljoin(f"{parsed.scheme}://{parsed.netloc}", "/robots.txt")
@@ -151,7 +160,7 @@ def make_robot_parser(url, logger=None):
         robotP = None
     
     return robotP
-
+'''
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
@@ -169,7 +178,6 @@ def extract_next_links(url, resp):
 
     links = set()
 
-    print(f"########### Scraping URL: {url} with status code: {resp.status} ###########")
     ## Handles cases where there is no response
     if resp is None:
         return []
@@ -195,7 +203,6 @@ def extract_next_links(url, resp):
     filtered_words = [word for word in words if word not in STOP_WORDS]
     word_frequencies = computeWordFrequencies(filtered_words)
 
-
     if(resp.status == 200):
         for a_tag in soup.find_all('a', href=True):
             try:
@@ -211,6 +218,31 @@ def extract_next_links(url, resp):
     else:
         print("Error: ", resp.error)
 
+    #BOOKKEEPING FOR REPORT
+    # Updating word frequencies
+    for word, freq in word_frequencies.items():
+        WORD_FREQUENCIES[word] = WORD_FREQUENCIES.get(word, 0) + freq
+
+    # Updating subdomain counts
+    parsed_url = urlparse(resp.url)
+    non_fragment_url = parsed_url._replace(fragment="")
+    if non_fragment_url not in UNIQUE_URLS:
+        subdomain = parsed_url.netloc.split(':')[0]
+        SUBDOMAIN_COUNTS[subdomain] = SUBDOMAIN_COUNTS.get(subdomain, 0) + 1
+
+    # Adding url to unique urls set
+    parsed_url = urlparse(resp.url)
+    unfragmented_url = parsed_url._replace(fragment="")
+    UNIQUE_URLS.add(unfragmented_url)
+
+    global LONGEST_PAGE
+    # Updating longest page
+    word_count = sum(word_frequencies.values())
+    if word_count > LONGEST_PAGE[1]:
+        LONGEST_PAGE = (resp.url, word_count)
+
+    # END BOOKKEEPING FOR REPORT
+
     with open("crawled_pages.txt", "a", encoding="utf-8") as f:
         f.write(f"{url}\n")
         f.write(f"Word frequencies:\n")
@@ -219,7 +251,7 @@ def extract_next_links(url, resp):
         f.write("\n\n")
     
     with open("crawled_urls.txt", "a", encoding="utf-8") as f:
-        f.write(f"{url}\n")
+        f.write(f"{url}: {resp.status}\n")
 
     return list(links)
 
@@ -238,10 +270,10 @@ def is_valid(url):
         else:
             return False
         
-        robotP = make_robot_parser(url, None)
-        if robotP is not None:
-            if not robotP.can_fetch(config.user_agent, url):
-                return False
+        #robotP = make_robot_parser(url, None)
+        #if robotP is not None:
+        #    if not robotP.can_fetch(config.user_agent, url):
+        #        return False
 
         BAD_QUERIES = {'eventDate', 'tribe-bar-date', 'ical'}
 
@@ -270,3 +302,16 @@ def is_valid(url):
     except TypeError:
         print ("TypeError for ", parsed)
         raise
+
+def print_report():
+    with open("report.txt", "w", encoding="utf-8") as f:
+        f.write(f"Total Unique URLs: {len(UNIQUE_URLS)}\n")
+        f.write(f"Longest Page: {LONGEST_PAGE[0]} with {LONGEST_PAGE[1]} words\n")
+        f.write("Subdomain Counts:\n")
+        sorted_subdomains = sorted(SUBDOMAIN_COUNTS.keys())
+        for subdomain in sorted_subdomains:
+            count = SUBDOMAIN_COUNTS[subdomain]
+            f.write(f"{subdomain}: {count} pages\n")
+        f.write("Top 50 Words:\n")
+        for word, freq in sorted(WORD_FREQUENCIES.items(), key=lambda x: x[1], reverse=True)[:50]:
+            f.write(f"{word}: {freq}\n")
