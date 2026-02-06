@@ -279,7 +279,7 @@ def is_valid(url):
         BAD_QUERIES = {
             'eventDate', 'tribe-bar-date', 'ical',
             'do', 'tab_files', 'tab_details', 'image',
-            'rev' 'idx'
+            'rev', 'idx'
         }
 
         parsedQuery = parsed.query
@@ -290,6 +290,11 @@ def is_valid(url):
         DATE_IN_PATH = re.compile(r"/\d{4}-\d{2}-\d{2}(?:/|$)")
         parsedPath = parsed.path.lower()
         if DATE_IN_PATH.search(parsedPath): # checks for calender/date loops
+            return False
+
+        # heuristic to detect repeating directory patterns which often indicate
+        # crawler traps such as calendar or pagination loops.
+        if re.match(r"^.?(/.+?/).?\1.$|^.?/(.+?/)\2.*$", parsedPath):
             return False
 
         return not re.match(
