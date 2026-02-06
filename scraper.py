@@ -189,8 +189,15 @@ def extract_next_links(url, resp):
     # Stores content of the webpage
     content = resp.raw_response.content
 
-    # Handles cases of empty or tiny pages
-    if not content or len(content) < 100:
+    # Handles cases of empty
+    if not content:
+        return []
+
+    # Handles cases of non html junk
+    headers = resp.raw_response.headers
+    content_type = headers.get("content-type", "")
+
+    if "text/html" not in content_type:
         return []
 
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
@@ -201,15 +208,18 @@ def extract_next_links(url, resp):
     text = soup.get_text()
     words = re.findall(r'\b[a-zA-Z]{2,}\b', text.lower())
     filtered_words = [word for word in words if word not in STOP_WORDS]
-    word_frequencies = computeWordFrequencies(filtered_words)
+
+    word_count = len(filtered_words)
+    low_text = word_count < 100 # used as a flag for little word count on pages while still
+                                # allowing us to pull urls off them
 
     if(resp.status == 200):
         for a_tag in soup.find_all('a', href=True):
             try:
-                parsed = urlparse(a_tag.get('href'))
-                parsed = parsed._replace(fragment="")
-                unfragmented = urlunparse(parsed)
-                links.add(unfragmented)
+                href = a_tag.get('href') # pulls url from anchor tag
+                absolute = urljoin(resp.url, href) # creates an absolute path from relative paths
+                parsed = urlparse(absolute)._replace(fragment = "") # removes fragments
+                links.add(urlunparse(parsed)) # add paths to link set
             except ValueError:
                 ## Catches URL that are weirdly formatted or malformed, such as 'YOUR_IP'
                 ## which crawler stumbled on
@@ -219,40 +229,30 @@ def extract_next_links(url, resp):
         print("Error: ", resp.error)
 
     #BOOKKEEPING FOR REPORT
-    # Updating word frequencies
-    for word, freq in word_frequencies.items():
-        WORD_FREQUENCIES[word] = WORD_FREQUENCIES.get(word, 0) + freq
-
     # Updating subdomain counts
     parsed_url = urlparse(resp.url)
-    non_fragment_url = parsed_url._replace(fragment="")
+    non_fragment_url = parsed_url._replace(fragment = "")
+    subdomain = parsed_url.netloc.split(':')[0]
+
     if non_fragment_url not in UNIQUE_URLS:
-        subdomain = parsed_url.netloc.split(':')[0]
+        UNIQUE_URLS.add(non_fragment_url)
         SUBDOMAIN_COUNTS[subdomain] = SUBDOMAIN_COUNTS.get(subdomain, 0) + 1
 
-    # Adding url to unique urls set
-    parsed_url = urlparse(resp.url)
-    unfragmented_url = parsed_url._replace(fragment="")
-    UNIQUE_URLS.add(unfragmented_url)
+    word_frequencies = {}
+    if not low_text:
+        word_frequencies = computeWordFrequencies(filtered_words)
 
-    global LONGEST_PAGE
-    # Updating longest page
-    word_count = sum(word_frequencies.values())
-    if word_count > LONGEST_PAGE[1]:
-        LONGEST_PAGE = (resp.url, word_count)
+        # Updating word frequencies
+        for word, freq in word_frequencies.items():
+            WORD_FREQUENCIES[word] = WORD_FREQUENCIES.get(word, 0) + freq
 
-    # END BOOKKEEPING FOR REPORT
+        global LONGEST_PAGE
+        # Updating longest page
+        word_count = sum(word_frequencies.values())
+        if word_count > LONGEST_PAGE[1]:
+            LONGEST_PAGE = (resp.url, word_count)
 
-    with open("crawled_pages.txt", "a", encoding="utf-8") as f:
-        f.write(f"{url}\n")
-        f.write(f"Word frequencies:\n")
-        for word, freq in sorted(word_frequencies.items(), key=lambda x: x[1], reverse=True):
-            f.write(f"{word}: {freq}\n")
-        f.write("\n\n")
-    
-    with open("crawled_urls.txt", "a", encoding="utf-8") as f:
-        f.write(f"{url}: {resp.status}\n")
-
+        # END BOOKKEEPING FOR REPORT
     return list(links)
 
 def is_valid(url):
@@ -275,7 +275,12 @@ def is_valid(url):
         #    if not robotP.can_fetch(config.user_agent, url):
         #        return False
 
-        BAD_QUERIES = {'eventDate', 'tribe-bar-date', 'ical'}
+        # idx block DokuWiki index/navigation pages
+        BAD_QUERIES = {
+            'eventDate', 'tribe-bar-date', 'ical',
+            'do', 'tab_files', 'tab_details', 'image',
+            'rev' 'idx'
+        }
 
         parsedQuery = parsed.query
         params = parse_qs(parsedQuery)
@@ -284,9 +289,7 @@ def is_valid(url):
         
         DATE_IN_PATH = re.compile(r"/\d{4}-\d{2}-\d{2}(?:/|$)")
         parsedPath = parsed.path.lower()
-        if '/calendar/' in parsedPath or '/events/' in parsedPath:
-            return False
-        elif DATE_IN_PATH.search(parsedPath):
+        if DATE_IN_PATH.search(parsedPath): # checks for calender/date loops
             return False
 
         return not re.match(
