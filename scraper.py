@@ -216,10 +216,21 @@ def extract_next_links(url, resp):
     if(resp.status == 200):
         for a_tag in soup.find_all('a', href=True):
             try:
-                href = a_tag.get('href') # pulls url from anchor tag
-                absolute = urljoin(resp.url, href) # creates an absolute path from relative paths
-                parsed = urlparse(absolute)._replace(fragment = "") # removes fragments
-                links.add(urlunparse(parsed)) # add paths to link set
+                # pulls url from anchor tag
+                href = a_tag.get('href')
+                # creates an absolute path from relative paths
+                absolute = urljoin(resp.url, href)
+                # removes fragments
+                parsed = urlparse(absolute)._replace(fragment = "")
+                # normalize scheme to avoid duplicate http/https URLs
+                if scheme == "http":
+                    scheme = "https"
+                # normalize default ports to avoid duplicate URLs (:80, :443)
+                netloc = parsed.netloc.replace(":80", "").replace(":443", "")
+                # creates a canonical version of the URL by normalizing scheme and netloc
+                parsed = parsed._replace(scheme=scheme, netloc=netloc)
+                # add paths to link set
+                links.add(urlunparse(parsed))
             except ValueError:
                 ## Catches URL that are weirdly formatted or malformed, such as 'YOUR_IP'
                 ## which crawler stumbled on
@@ -286,10 +297,18 @@ def is_valid(url):
         params = parse_qs(parsedQuery)
         if any(param in params for param in BAD_QUERIES):
             return False
+
+        # handle case of very long query strings that usually indicate UI/state traps
+        if len(parsed.query) > 100:
+            return False
         
         DATE_IN_PATH = re.compile(r"/\d{4}-\d{2}-\d{2}(?:/|$)")
         parsedPath = parsed.path.lower()
         if DATE_IN_PATH.search(parsedPath): # checks for calender/date loops
+            return False
+
+        # a long path depth is most likely a trap
+        if parsedPath.count("/") > 10:
             return False
 
         # heuristic to detect repeating directory patterns which often indicate
