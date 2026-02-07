@@ -293,6 +293,10 @@ def is_valid(url):
         if "paged" in params:
             return False
 
+        # block WordPress auth / admin pages
+        if re.search(r"/wp-(login|admin)", parsed.path.lower()):
+            return False
+
 
         #robotP = make_robot_parser(url, None)
         #if robotP is not None:
@@ -304,7 +308,8 @@ def is_valid(url):
         BAD_QUERIES = {
             'eventDate', 'tribe-bar-date', 'ical',
             'do', 'tab_files', 'tab_details', 'image',
-            'rev', 'idx', "outlook-ical"
+            'rev', 'idx', "outlook-ical", "date", "year",
+            "month", "day", "redirect_to", "action", "loggedout"
         }
 
         if any(param in params for param in BAD_QUERIES):
