@@ -223,8 +223,7 @@ def extract_next_links(url, resp):
                 # removes fragments
                 parsed = urlparse(absolute)._replace(fragment = "")
                 # normalize scheme to avoid duplicate http/https URLs
-                if scheme == "http":
-                    scheme = "https"
+                scheme = parsed.scheme.lower()
                 # normalize default ports to avoid duplicate URLs (:80, :443)
                 netloc = parsed.netloc.replace(":80", "").replace(":443", "")
                 # creates a canonical version of the URL by normalizing scheme and netloc
@@ -280,35 +279,56 @@ def is_valid(url):
                 break
         else:
             return False
-        
+
+        # block GitLab repositories (UI-heavy, non-informational, trap-prone)
+        if parsedDomain.endswith("gitlab.ics.uci.edu"):
+            return False
+
+        # block pagination paths like /page/2, /page/40
+        if re.search(r"/page/\d+", parsed.path.lower()):
+            return False
+
+        # block pagination via query params (?paged=40)
+        params = parse_qs(parsed.query)
+        if "paged" in params:
+            return False
+
+
         #robotP = make_robot_parser(url, None)
         #if robotP is not None:
         #    if not robotP.can_fetch(config.user_agent, url):
         #        return False
 
         # idx block DokuWiki index/navigation pages
+
         BAD_QUERIES = {
             'eventDate', 'tribe-bar-date', 'ical',
             'do', 'tab_files', 'tab_details', 'image',
-            'rev', 'idx'
+            'rev', 'idx', "outlook-ical"
         }
 
-        parsedQuery = parsed.query
-        params = parse_qs(parsedQuery)
         if any(param in params for param in BAD_QUERIES):
             return False
 
         # handle case of very long query strings that usually indicate UI/state traps
         if len(parsed.query) > 100:
             return False
-        
-        DATE_IN_PATH = re.compile(r"/\d{4}-\d{2}-\d{2}(?:/|$)")
+
+        DATE_IN_PATH = re.compile(r"/\d{4}-\d{2}(?:-\d{2})?(?:/|$)")
         parsedPath = parsed.path.lower()
-        if DATE_IN_PATH.search(parsedPath): # checks for calender/date loops
+        if DATE_IN_PATH.search(parsedPath):
             return False
 
         # a long path depth is most likely a trap
         if parsedPath.count("/") > 10:
+            return False
+
+        # block Grape wiki revision/history UI (infinite version trap)
+        if parsed.netloc.endswith("grape.ics.uci.edu"):
+            return False
+
+        # block photo gallery directories (many HTML pages, little text)
+        if "/pix/" in parsed.path.lower():
             return False
 
         # heuristic to detect repeating directory patterns which often indicate
