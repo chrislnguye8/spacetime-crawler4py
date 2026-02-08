@@ -1,0 +1,187 @@
+Total Unique URLs: 17631
+Longest Page: http://circadiomics.ics.uci.edu/datasets with 23581 words
+Subdomain Counts:
+accessibility.ics.uci.edu: 6 pages
+acoi.ics.uci.edu: 115 pages
+aiclub.ics.uci.edu: 1 pages
+archive-beta.ics.uci.edu: 11 pages
+archive.ics.uci.edu: 202 pages
+asterix.ics.uci.edu: 12 pages
+betapro.proteomics.ics.uci.edu: 2 pages
+capstone.cs.uci.edu: 8 pages
+cdb.ics.uci.edu: 48 pages
+cecs.uci.edu: 1 pages
+cert.ics.uci.edu: 46 pages
+checkin.ics.uci.edu: 5 pages
+chemdb.ics.uci.edu: 47 pages
+chenli.ics.uci.edu: 10 pages
+circadiomics.ics.uci.edu: 8 pages
+cloudberry.ics.uci.edu: 43 pages
+cml.ics.uci.edu: 158 pages
+code.ics.uci.edu: 14 pages
+computableplant.ics.uci.edu: 140 pages
+containers.ics.uci.edu: 1 pages
+courselisting.ics.uci.edu: 2 pages
+cps-iot-week2025.ics.uci.edu: 13 pages
+create.ics.uci.edu: 7 pages
+cs.ics.uci.edu: 13 pages
+cs.uci.edu: 2 pages
+cwicsocal18.ics.uci.edu: 12 pages
+cyberclub.ics.uci.edu: 11 pages
+cybert.ics.uci.edu: 24 pages
+demsky.eecs.uci.edu: 1 pages
+dgillen.ics.uci.edu: 29 pages
+ds4all.ics.uci.edu: 5 pages
+duttgroup.ics.uci.edu: 127 pages
+dynamo.ics.uci.edu: 33 pages
+edgelab.ics.uci.edu: 7 pages
+elms.ics.uci.edu: 1 pages
+emj.ics.uci.edu: 40 pages
+evoke.ics.uci.edu: 5 pages
+flamingo.ics.uci.edu: 55 pages
+fr.ics.uci.edu: 10 pages
+frost.ics.uci.edu: 1 pages
+futurehealth.ics.uci.edu: 178 pages
+gradinfo.ics.uci.edu: 3 pages
+graphics.ics.uci.edu: 18 pages
+graphmod.ics.uci.edu: 16 pages
+hack.ics.uci.edu: 2 pages
+hai.ics.uci.edu: 7 pages
+helpdesk.ics.uci.edu: 4 pages
+hobbes.ics.uci.edu: 10 pages
+hpi.ics.uci.edu: 5 pages
+hub.ics.uci.edu: 4 pages
+i-sensorium.ics.uci.edu: 6 pages
+iasl.ics.uci.edu: 1 pages
+icde2023.ics.uci.edu: 47 pages
+ics.uci.edu: 2851 pages
+industryshowcase.ics.uci.edu: 23 pages
+informatics-stage.ics.uci.edu: 1 pages
+informatics.ics.uci.edu: 2 pages
+informatics.uci.edu: 6 pages
+insite.ics.uci.edu: 10 pages
+intranet.ics.uci.edu: 5 pages
+ipubmed.ics.uci.edu: 1 pages
+isg.ics.uci.edu: 273 pages
+jdsylab.physics.uci.edu: 25 pages
+jgarcia.ics.uci.edu: 40 pages
+julia-hub.ics.uci.edu: 2 pages
+luci.ics.uci.edu: 6 pages
+mailman.ics.uci.edu: 57 pages
+malek.ics.uci.edu: 7 pages
+mcs.ics.uci.edu: 12 pages
+mdogucu.ics.uci.edu: 2 pages
+mds.ics.uci.edu: 10 pages
+mhcid.ics.uci.edu: 20 pages
+mlphysics.ics.uci.edu: 195 pages
+motifmap.ics.uci.edu: 1 pages
+mover.ics.uci.edu: 24 pages
+mswe.ics.uci.edu: 11 pages
+mupro.proteomics.ics.uci.edu: 3 pages
+nalini.ics.uci.edu: 7 pages
+netreg.ics.uci.edu: 3 pages
+newport.eecs.uci.edu: 10 pages
+ngs.ics.uci.edu: 1147 pages
+oai.ics.uci.edu: 5 pages
+observium.ics.uci.edu: 1 pages
+onboarding.ics.uci.edu: 4 pages
+pepito.proteomics.ics.uci.edu: 5 pages
+pgadmin.ics.uci.edu: 1 pages
+physics.uci.edu: 646 pages
+plrg.eecs.uci.edu: 29 pages
+plrg.ics.uci.edu: 16 pages
+psearch.ics.uci.edu: 1 pages
+radicle.ics.uci.edu: 1 pages
+redmiles.ics.uci.edu: 7 pages
+riscit.ics.uci.edu: 3 pages
+scale.ics.uci.edu: 7 pages
+scratch.proteomics.ics.uci.edu: 4 pages
+seal.ics.uci.edu: 48 pages
+selectpro.proteomics.ics.uci.edu: 5 pages
+sherlock.ics.uci.edu: 8 pages
+speedtest.ics.uci.edu: 1 pages
+staging-hub.ics.uci.edu: 2 pages
+stairs.ics.uci.edu: 4 pages
+stat.ics.uci.edu: 12 pages
+stat.uci.edu: 6 pages
+statconsulting.ics.uci.edu: 5 pages
+statistics-stage.ics.uci.edu: 11 pages
+student-council.ics.uci.edu: 3 pages
+studentcouncil.ics.uci.edu: 2 pages
+students.ics.uci.edu: 1 pages
+summeracademy.ics.uci.edu: 8 pages
+support.ics.uci.edu: 14 pages
+svn.ics.uci.edu: 1 pages
+swiki.ics.uci.edu: 205 pages
+tad.ics.uci.edu: 3 pages
+tastier.ics.uci.edu: 1 pages
+theory.physics.uci.edu: 1 pages
+tutoring.ics.uci.edu: 5 pages
+ugradforms.ics.uci.edu: 1 pages
+unite.ics.uci.edu: 10 pages
+vision.ics.uci.edu: 216 pages
+wics.ics.uci.edu: 1912 pages
+wiki.ics.uci.edu: 209 pages
+www-db.ics.uci.edu: 38 pages
+www.cecs.uci.edu: 119 pages
+www.cs.uci.edu: 24 pages
+www.economics.uci.edu: 1 pages
+www.eecs.uci.edu: 506 pages
+www.ics.uci.edu: 4842 pages
+www.informatics.ics.uci.edu: 1 pages
+www.informatics.uci.edu: 1100 pages
+www.nacs.uci.edu: 5 pages
+www.physics.uci.edu: 937 pages
+www.stat.uci.edu: 297 pages
+xtune.ics.uci.edu: 6 pages
+Top 50 Words:
+ics: 37004
+student: 32261
+uci: 27153
+markellekelly: 26855
+computer: 25463
+graduate: 22787
+undergraduate: 21717
+science: 21373
+data: 19843
+software: 18862
+students: 18739
+events: 18429
+learning: 17982
+irvine: 17129
+informatics: 16990
+news: 16451
+will: 15232
+engineering: 14269
+university: 13744
+search: 13719
+html: 13409
+community: 13119
+faculty: 12986
+update: 12610
+alumni: 11944
+projects: 11926
+systems: 11913
+june: 11492
+automatic: 11432
+september: 11412
+department: 11104
+computing: 11005
+october: 10805
+july: 10750
+school: 10657
+spotlights: 10657
+people: 10601
+ph: 10481
+contact: 10400
+uc: 10333
+design: 10287
+march: 10261
+time: 10252
+august: 10212
+january: 10186
+april: 10150
+november: 9888
+february: 9760
+statistics: 9747
+december: 9666
