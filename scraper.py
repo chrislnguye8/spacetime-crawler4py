@@ -112,15 +112,6 @@ SUBDOMAIN_COUNTS = {} # dictionary of (subdomain: page count)
 # dictionary of robots.txt urls to robotparser objects
 ROBOTS_DIC = {}
 
-# parse config file and make global variable
-'''
-cParser = ConfigParser()
-cParser.read("config.ini")
-config = Config(cParser)
-config.cache_server = get_cache_server(config, restart)
-'''
-
-
 def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
     """
     Takes a list of tokens and returns a dictionary of each Token and 
@@ -138,29 +129,7 @@ def computeWordFrequencies(tokenList: list[str]) -> dict[str, int]:
         else:
             tokenDict[token] = 1
     return tokenDict
-'''
-def make_robot_parser(url, logger=None):
-    parsed = urlparse(url)
-    robots_url = urljoin(f"{parsed.scheme}://{parsed.netloc}", "/robots.txt")
 
-    if robots_url in ROBOTS_DIC:
-        return ROBOTS_DIC[robots_url]
-    
-    response = download(robots_url, config, logger)
-    robotP = RobotFileParser()
-    # this line for debugging
-    robotP.set_url(robots_url)
-
-    try:
-        content = response.raw_response.get("content", b"").decode("utf-8", errors="ignore")
-        robotP.parse(content.splitlines())
-        # should I put into the dic here or after the try/except
-        ROBOTS_DIC[robots_url] = robotP
-    except:
-        robotP = None
-    
-    return robotP
-'''
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
@@ -248,7 +217,6 @@ def extract_next_links(url, resp):
         UNIQUE_URLS.add(non_fragment_url)
         SUBDOMAIN_COUNTS[subdomain] = SUBDOMAIN_COUNTS.get(subdomain, 0) + 1
 
-    word_frequencies = {}
     if not low_text:
         word_frequencies = computeWordFrequencies(filtered_words)
 
@@ -296,14 +264,6 @@ def is_valid(url):
         # block WordPress auth / admin pages
         if re.search(r"/wp-(login|admin)", parsed.path.lower()):
             return False
-
-
-        #robotP = make_robot_parser(url, None)
-        #if robotP is not None:
-        #    if not robotP.can_fetch(config.user_agent, url):
-        #        return False
-
-        # idx block DokuWiki index/navigation pages
 
         BAD_QUERIES = {
             'eventDate', 'tribe-bar-date', 'ical',
